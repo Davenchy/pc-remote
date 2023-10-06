@@ -42,6 +42,8 @@ public:
   ScriptsManager(ScriptsManager &&);
   ScriptsManager &operator=(ScriptsManager &&);
 
+  int getCount() const;
+
   std::string get_scripts_path();
 
   bool has_script(std::string script_name);

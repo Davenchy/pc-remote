@@ -59,6 +59,10 @@ int Server::accept() {
 bool Server::isRunning() { return socket_fd != -1; }
 
 void Server::shutdown() {
+  for (auto &client : clients)
+    if (client.second.isConnected())
+      client.second.disconnect();
+
   if (socket_fd != -1)
     close(socket_fd);
 }

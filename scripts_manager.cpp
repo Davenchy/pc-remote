@@ -8,6 +8,8 @@ ScriptsManager::ScriptsManager(std::string scripts_path)
 
 ScriptsManager::~ScriptsManager() {}
 
+int ScriptsManager::getCount() const { return scripts.size(); }
+
 std::string ScriptsManager::get_scripts_path() { return scripts_path; }
 
 bool ScriptsManager::has_script(std::string script_name) {
