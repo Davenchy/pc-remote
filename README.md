@@ -11,11 +11,12 @@ $ make build clean
 $ ./pc_remote
 ```
 
-## Config
+## Configuration and Environment Variables
 
-- By default PC-Remote will listen on port __5050__, you can set the env var `PC_REMOTE_PORT` to change the port.
-
-- By default PC-Remote will load scripts from `$HOME/.config/remote_scripts/` path, you can set the env var `PC_REMOTE_SCRIPTS_PATH` to change the scripts path.
+| Env Var | Default | Description |
+|:-------:|:-----------:|:-----------:|
+| PC_REMOTE_PORT | 5050 | Port to listen on. |
+| PC_REMOTE_SCRIPTS_PATH | $HOME/.config/remote_scripts/ `if XDG_CONFIG_HOME is set` __or__ $HOME/remote_scripts/ | Path to scripts directory. |
 
 ## Scripts
 

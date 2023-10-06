@@ -3,8 +3,11 @@
 #include "include/network.hpp"
 #include "include/scripts_manager.hpp"
 #include <algorithm>
+#include <cerrno>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
+#include <linux/limits.h>
 #include <sstream>
 
 static void trim(std::string &s) {
@@ -24,19 +27,35 @@ int getPort(int defaultPort) {
     return defaultPort;
 }
 
-std::string getScriptsPath(std::string defaultScriptsPath) {
-  char *path = std::getenv("PC_REMOTE_SCRIPTS_PATH");
-  if (path)
+std::string getScriptsPath(const char *defaultScriptsPath) {
+  char *path = nullptr, fullpath[PATH_MAX];
+
+  path = std::getenv("PC_REMOTE_SCRIPTS_PATH");
+  if (path != nullptr)
     return std::string(path);
-  else
-    return defaultScriptsPath;
+
+  path = std::getenv("XDG_CONFIG_HOME");
+  if (path != nullptr)
+    goto find_realpath;
+  path = std::getenv("HOME");
+  if (path != nullptr)
+    goto find_realpath;
+
+  throw std::runtime_error("Please set PC_REMOTE_SCRIPTS_PATH or "
+                           "XDG_CONFIG_HOME or HOME");
+
+find_realpath:
+  realpath(path, fullpath);
+  std::string ret(fullpath);
+  return ret + "/remote_scripts/";
 }
 
 int main() {
   Server server(getPort(5050));
-  ScriptsManager sm(getScriptsPath("remote_scripts/"));
+  ScriptsManager sm(getScriptsPath("~/.config/remote_scripts"));
   CommandsManager cm;
 
+  std::cout << "loading scripts: " << sm.get_scripts_path() << std::endl;
   sm.load_scripts();
 
   cm.defineCommand("ls", "list all loaded scripts",
