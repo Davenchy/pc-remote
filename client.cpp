@@ -66,3 +66,5 @@ void Client::disconnect() {
   if (socket_fd != 0)
     close(socket_fd);
 }
+
+uint16_t Server::getPort() { return port; }

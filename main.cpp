@@ -1,27 +1,82 @@
 #include "include/network.hpp"
+#include "include/scripts_manager.hpp"
+#include <algorithm>
+#include <cstdlib>
 #include <iostream>
 
-void error(const char *msg) {
-  perror(msg);
-  exit(1);
+static void trim(std::string &s) {
+  s.erase(s.begin(), std::find_if_not(s.begin(), s.end(),
+                                      [](char c) { return std::isspace(c); }));
+  s.erase(std::find_if_not(s.rbegin(), s.rend(),
+                           [](char c) { return std::isspace(c); })
+              .base(),
+          s.end());
+}
+
+int getPort(int defaultPort) {
+  char *port = std::getenv("PC_REMOTE_PORT");
+  if (port)
+    return std::atoi(port);
+  else
+    return defaultPort;
+}
+
+std::string getScriptsPath(std::string defaultScriptsPath) {
+  char *path = std::getenv("PC_REMOTE_SCRIPTS_PATH");
+  if (path)
+    return std::string(path);
+  else
+    return defaultScriptsPath;
 }
 
 int main() {
-  Server server(1234);
+  Server server(getPort(5050));
+  ScriptsManager sm(getScriptsPath("remote_scripts/"));
 
-  int client = server.accept();
-  if (client == -1)
-    return 1;
+  sm.load_scripts();
 
-  Client &client1 = server.getClient(client);
-  std::cout << "Connected: " << client1.getAddress() << ":" << client1.getPort()
-            << std::endl;
-  client1.send("hello");
+  std::cout << "server running on port: " << server.getPort() << std::endl;
 
-  std::string msg = client1.recv();
-  printf("msg: %s\n", msg.c_str());
+  int client_fd = server.accept();
+  Client &client = server.getClient(client_fd);
 
-  client1.disconnect();
-  server.shutdown();
+  while (true) {
+    client.send("> ");
+    std::string script_name = client.recv();
+    trim(script_name);
+
+    if (script_name == "")
+      continue;
+    if (script_name == "q") {
+      std::cout << "!> quit" << std::endl;
+      client.send("!> byebye\n");
+      break;
+    }
+
+    if (script_name == "help") {
+      client.send("!> help\n");
+      client.send("");
+    }
+
+    if (script_name == "reload") {
+    }
+
+    if (script_name == "ls") {
+      std::cout << "!> ls" << std::endl;
+      client.send("!> ls\n");
+      continue;
+    }
+
+    if (!sm.has_script(script_name)) {
+      std::cout << "!> script not found: " << script_name << std::endl;
+      client.send("!> Script not found: " + script_name + '\n');
+      continue;
+    }
+
+    std::cout << "!> script: " << script_name << std::endl;
+    client.send("!> Executing script: " + script_name + '\n');
+    sm.run_script(script_name);
+  }
+
   return 0;
 }

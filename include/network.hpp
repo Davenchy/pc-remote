@@ -33,7 +33,7 @@ public:
 
 class Server {
   int socket_fd = -1;
-  int port;
+  int port = 0;
   int queue_size = 5;
   std::map<int, Client> clients;
 
@@ -49,6 +49,8 @@ public:
 
   bool isRunning();
   void shutdown();
+
+  uint16_t getPort();
 
   Client &operator[](int client_fd);
 };

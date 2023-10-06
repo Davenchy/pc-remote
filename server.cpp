@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <unistd.h>
 
-Server::Server(int port) {
+Server::Server(int port) : port(port) {
   sockaddr_in server_addr;
   int opt = 1;
 
