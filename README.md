@@ -1,6 +1,6 @@
 # PC-Remote
 
-- Control your Linux Machine from anywhere inside LAN.
+- Control your Linux Machine from anywhere.
 
 ## Build
 
